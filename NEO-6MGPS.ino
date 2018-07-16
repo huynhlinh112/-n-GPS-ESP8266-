@@ -12,17 +12,12 @@
  ** MISO - pin 12
  ** CLK - pin 13
  ** CS - pin 4
-
  created   Nov 2010
  by David A. Mellis
  modified 9 Apr 2012
  by Tom Igoe
-
  This example code is in the public domain.
-
- */
-
- 
+ */ 
  // MOSI - D7
 // MISO - D6
  // CLK -  D5
