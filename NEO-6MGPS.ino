@@ -1,29 +1,18 @@
 /*********************
- *10 to GPS Module TX*
- *09 to GPS Module RX*
+ *D2 to GPS Module TX*
+ *D1 to GPS Module RX*
  *********************/
  /*
   SD card read/write
-
  This example shows how to read and write data to and from an SD card file
  The circuit:
  * SD card attached to SPI bus as follows:
- ** MOSI - pin 11
- ** MISO - pin 12
- ** CLK - pin 13
- ** CS - pin 4
- created   Nov 2010
- by David A. Mellis
- modified 9 Apr 2012
- by Tom Igoe
+ ** MOSI - pin D7
+ ** MISO - pin D6
+ ** CLK  - pin D5
+ ** CS   - pin D8
  This example code is in the public domain.
- */ 
- // MOSI - D7
-// MISO - D6
- // CLK -  D5
- // CS - D8
- //Tx - D2
- //Rx - D1
+ */
 #include <SoftwareSerial.h>
 #include <TinyGPS.h>
 #define BLYNK_PRINT Serial
@@ -45,23 +34,31 @@ void gpsdump(TinyGPS &gps);
 void printFloat(double f, int digits = 2);
 
 char auth[] = "dd22a1f2e2b94d98ac723b383b62c9c6";                   //Your Project authentication key
-char ssid[] = "Hoang Trang";                                       // Name of your network (HotSpot or Router name)
-char pass[] = "hoangtrang";   
+char ssid[] = "HoangTrang";                                       // Name of your network (HotSpot or Router name)
+char pass[] = "n14dcdt112";   
 
 
 void setup()  
 {
+  
   // Oploen serial communications and wait for port to open:
   Serial.begin(9600);
   Serial.print("Inicializando o cartão SD...");
   Serial.println();
   pinMode (D0,OUTPUT);
   pinMode (D3,OUTPUT);
+  pinMode(D4,INPUT_PULLUP);
    //ss.begin(GPSBaud);
   // set the data rate for the SoftwareSerial port
+ 
   mySerial.begin(9600);
+  
   Blynk.begin(auth, ssid, pass);
-  delay(1000);
+  delay(100);
+  //notify to Email.
+  Blynk.email("huynhduclinh10c4@gmail.com", " >> My systems is beginning Work <<", "My Blynk is wifi.  ");
+  Blynk.notify("My systems is beginning Work ");
+  attachInterrupt(digitalPinToInterrupt(D4), emailOnButtonPress, CHANGE);
   Serial.println("uBlox Neo 6M");
   Serial.print("Testing TinyGPS library v. "); Serial.println(TinyGPS::library_version());
   Serial.println("by Mikal Hart");
@@ -112,7 +109,6 @@ void loop() // run over and over
   }
  //Serial.println("initialization done.");
   
-  
 }
 
 
@@ -147,9 +143,7 @@ unsigned long age, date, time, chars;
     Serial.print(time);
   Serial.print(" Fix age: "); Serial.print(age); Serial.println("ms.");
 
- 
   // se o arquivo foi aberto corretamente, escreve os dados nele
-
  
   gps.crack_datetime(&year, &month, &day, &hour, &minute, &second, &hundredths, &age);
   Serial.print("Date: "); Serial.print(static_cast<int>(month)); Serial.print("/"); 
@@ -174,7 +168,7 @@ unsigned long age, date, time, chars;
  if (dataFile) {
  
     Serial.println("O arquivo foi aberto com sucesso.");
-      //formatação no arquivo: linha a linha >> UMIDADE | TEMPERATURA
+      //Data has been successfully written to file.txt
       dataFile.println(" Toa do : ");
       dataFile.print(String(flat, 6));
       dataFile.print(" , ");
@@ -185,16 +179,14 @@ unsigned long age, date, time, chars;
         dataFile.print(month);
         dataFile.print("/ ");
         dataFile.print(year);
-      
-      //fecha o arquivo após usá-lo
+      //close SD card
       dataFile.close();
   }
-  // se o arquivo não pôde ser aberto os dados não serão gravados.
+  // The data was not successful
   else {
-    Serial.println("Falha ao abrir o arquivo LOG.txt");
+    Serial.println("The data was not successful.txt");
   }
  
-  //intervalo de espera para uma nova leitura dos dados.
   delay(200); 
 }
 
@@ -232,18 +224,38 @@ void printFloat(double number, int digits)
     remainder -= toPrint;
   }
 }
-
+//Power
 BLYNK_WRITE(V2)
 {
   Serial.println(D0,!param.asInt());
 }
 
+//whistle signaling
 
 BLYNK_WRITE(V3)
 {
   Serial.println(D3,!param.asInt());
 }
 
+void emailOnButtonPress()
+{
+  // *** WARNING: You are limited to send ONLY ONE E-MAIL PER 15 SECONDS! ***
+
+  // Let's send an e-mail when you press the button
+  // connected to digital pin 2 on your Arduino
+
+  int isButtonPressed = !digitalRead(D4); // Invert state, since button is "Active LOW"
+
+  if (isButtonPressed) // You can write any condition to trigger e-mail sending
+  {
+    Serial.println("Button is pressed."); // This can be seen in the Serial Monitor
+   // Blynk.email("huynhduclinh10c4@mail.com", " In special cases >> EMERGENCY HAZARD << ", "YOU SHOULD POSITION YOUR CHILD IMMEDIATELY ...");
+  Blynk.email("huynhduclinh10c4@gmail.com", " >>  In special cases >> EMERGENCY HAZARD <<", "YOU SHOULD POSITION YOUR CHILD IMMEDIATELY ...  ");
+  Blynk.notify("In special cases >> EMERGENCY HAZARD << ");
+    // Or, if you want to use the email specified in the App (like for App Export):
+    //Blynk.email("Subject: Button Logger", "You just pushed the button...");
+  }
+}
 
 
 
